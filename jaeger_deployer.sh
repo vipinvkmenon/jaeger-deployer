@@ -16,7 +16,9 @@ $depl
 EOF
 
 ##
-collector_url="collector-$instance.$ingress_val"
+jaegercollector="jaeger-collector-$instance.$ingress_val"
+jaegerquery="jaeger-query-$instance.$ingress_val"
+
 cd tmp
 
 cat > csr.txt << EOF
@@ -38,12 +40,15 @@ CN = $ns
 [ req_ext ]
 subjectAltName = @alt_names
 [ alt_names ]
-DNS.1 = $collectorURL
+DNS.1 = $jaegercollector
 EOF
 
 openssl req -new -x509 -sha256 -newkey rsa:2048 -nodes -keyout CA.key -days 365 -out CA.crt -config csr.txt &> /dev/null
 
 openssl req -nodes -newkey rsa:2048 -keyout server.key -out server.csr -config csr.txt &> /dev/null
 
+openssl x509 -req -extfile <(printf "subjectAltName=DNS:$jaegercollector") -days 1460 -in server.csr -CA CA.crt -CAkey CA.key -set_serial 01 -out server.crt &> /dev/null
+
+kubectl create secret generic jaeger-grpc-tls --from-file=tls.crt=server.crt --from-file=tls.key=server.key --from-file=ca.crt=CA.crt --from-file=ca.key=CA.key
 
 
