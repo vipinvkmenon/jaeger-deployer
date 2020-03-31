@@ -19,6 +19,29 @@ EOF
 collector_url="collector-$instance.$ingress_val"
 cd tmp
 
+cat > csr.txt << EOF
+[req]
+default_bits = 2048
+prompt = no
+default_md = sha256
+req_extensions = req_ext
+distinguished_name = dn
+
+[ dn ]
+C=NA
+ST=NA
+L=NA
+O=NA
+OU=Jaeger
+emailAddress=$email
+CN = $ns
+[ req_ext ]
+subjectAltName = @alt_names
+[ alt_names ]
+DNS.1 = $collectorURL
+EOF
 
 openssl req -new -x509 -sha256 -newkey rsa:2048 -nodes -keyout CA.key -days 365 -out CA.crt -config csr.txt &> /dev/null
+
+
 
