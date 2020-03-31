@@ -17,6 +17,7 @@ EOF
 
 ##
 jaegercollector="jaeger-collector-$ns.$ingress_val"
+jaegergrpccollector="jaeger-grpc-collector-$ns.$ingress_val"
 jaegerquery="jaeger-query-$ns.$ingress_val"
 
 cd tmp
@@ -124,7 +125,7 @@ metadata:
   name: jaeger-grpc-ingress
 spec:
   rules:
-  - host: $jaegercollector
+  - host: $jaegergrpccollector
     http:
       paths:
       - path: / 
@@ -133,6 +134,6 @@ spec:
           servicePort: 14250
   tls:
   - hosts:
-    - $jaegercollector 
+    - $jaegergrpccollector 
     secretName: jaeger-grpc-tls  
 EOF
