@@ -51,4 +51,8 @@ openssl x509 -req -extfile <(printf "subjectAltName=DNS:$jaegercollector") -days
 
 kubectl create secret generic jaeger-grpc-tls --from-file=tls.crt=server.crt --from-file=tls.key=server.key --from-file=ca.crt=CA.crt --from-file=ca.key=CA.key
 
+jaeger_pass=`openssl rand -base64 10`
+htpasswd -c -b $customerName/auth jaeger $jaeger_pass
+
+kubectl create secret generic jaeger-http-auth --from-file=auth=auth --from-literal=username=jaeger --from-literal=password="$jaeger_pass"
 
