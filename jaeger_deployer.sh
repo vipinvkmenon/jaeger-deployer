@@ -43,5 +43,7 @@ EOF
 
 openssl req -new -x509 -sha256 -newkey rsa:2048 -nodes -keyout CA.key -days 365 -out CA.crt -config csr.txt &> /dev/null
 
+openssl req -nodes -newkey rsa:2048 -keyout server.key -out server.csr -config csr.txt &> /dev/null
+
 
 
