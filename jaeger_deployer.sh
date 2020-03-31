@@ -16,8 +16,8 @@ $depl
 EOF
 
 ##
-jaegercollector="jaeger-collector-$instance.$ingress_val"
-jaegerquery="jaeger-query-$instance.$ingress_val"
+jaegercollector="jaeger-collector-$ns.$ingress_val"
+jaegerquery="jaeger-query-$ns.$ingress_val"
 
 cd tmp
 
