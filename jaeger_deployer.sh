@@ -19,3 +19,6 @@ EOF
 collector_url="collector-$instance.$ingress_val"
 cd tmp
 
+
+openssl req -new -x509 -sha256 -newkey rsa:2048 -nodes -keyout CA.key -days 365 -out CA.crt -config csr.txt &> /dev/null
+
