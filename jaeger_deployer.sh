@@ -56,3 +56,83 @@ htpasswd -c -b $customerName/auth jaeger $jaeger_pass
 
 kubectl create secret generic jaeger-http-auth --from-file=auth=auth --from-literal=username=jaeger --from-literal=password="$jaeger_pass"
 
+cat << EOF | kubectl apply -f -
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: jaeger-http-auth
+    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required'
+  labels:
+    app: jaeger
+    release: jaeger
+  name: jaeger-collector-ingress
+spec:
+  rules:
+  - host: $jaegercollector
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: jaeger-collector
+          servicePort: 14268
+  tls:
+  - hosts:
+    - $jaegercollector
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: jaeger-http-auth
+    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required'
+  labels:
+    app: jaeger
+    release: jaeger
+  name: jaeger-query-ingress
+spec:
+  rules:
+  - host: $jaegerquery
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: jaeger-query
+          servicePort: 16686
+  tls:
+  - hosts:
+    - $jaegerquery
+---    
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    nginx.ingress.kubernetes.io/grpc-backend: "true"
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: "on"
+    nginx.ingress.kubernetes.io/auth-tls-secret: "jaeger-grpc-tls"
+  labels:
+    app: jaeger
+    release: jaeger
+  name: jaeger-grpc-ingress
+spec:
+  rules:
+  - host: $jaegercollector
+    http:
+      paths:
+      - path: / 
+        backend:
+          serviceName: jaeger-collector-grpc
+          servicePort: 14250
+  tls:
+  - hosts:
+    - $jaegercollector 
+    secretName: jaeger-grpc-tls  
+EOF
